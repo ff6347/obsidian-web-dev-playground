@@ -14,12 +14,15 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@semantic-release/exec": "7.1.0",
+    "@technologiestiftung/semantic-release-config": "1.2.4",
     "@types/node": "24.8.1",
     "@vitest/ui": "3.2.4",
     "builtin-modules": "5.0.0",
     "jsdom": "27.0.1",
     "obsidian": "1.10.0",
     "rolldown": "1.0.0-beta.9-commit.d91dfb5",
+    "semantic-release": "25.0.1",
     "typescript": "5.9.3",
     "vitest": "3.2.4"
   },
