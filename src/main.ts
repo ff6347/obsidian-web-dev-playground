@@ -16,7 +16,7 @@ export default class WebDevPlaygroundPlugin extends Plugin {
 
         this.registerView(
             VIEW_TYPE_PLAYGROUND,
-            (leaf) => new PlaygroundView(leaf, this.settings)
+            (leaf) => new PlaygroundView(leaf, this)
         );
 
         this.addRibbonIcon('code', 'Open Web Dev Playground', () => {
@@ -40,7 +40,18 @@ export default class WebDevPlaygroundPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+        const loaded = await this.loadData();
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, loaded);
+
+        if (this.settings.debounceTimeout < 100 || this.settings.debounceTimeout > 2000) {
+            console.warn(`Invalid debounceTimeout: ${this.settings.debounceTimeout}. Using default: ${DEFAULT_SETTINGS.debounceTimeout}`);
+            this.settings.debounceTimeout = DEFAULT_SETTINGS.debounceTimeout;
+        }
+
+        if (this.settings.loopProtectionTimeout < 50 || this.settings.loopProtectionTimeout > 1000) {
+            console.warn(`Invalid loopProtectionTimeout: ${this.settings.loopProtectionTimeout}. Using default: ${DEFAULT_SETTINGS.loopProtectionTimeout}`);
+            this.settings.loopProtectionTimeout = DEFAULT_SETTINGS.loopProtectionTimeout;
+        }
     }
 
     async saveSettings() {

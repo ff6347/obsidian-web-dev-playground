@@ -5,21 +5,19 @@ import { ItemView, WorkspaceLeaf, MarkdownView, debounce } from 'obsidian';
 import { CodeBlockExtractor } from './CodeBlockExtractor.js';
 import { CodeTransformer } from './CodeTransformer.js';
 import { IframeRenderer } from './IframeRenderer.js';
-import type { PlaygroundSettings } from './settings.js';
+import type WebDevPlaygroundPlugin from './main.js';
 
 export const VIEW_TYPE_PLAYGROUND = 'web-dev-playground';
 
 export class PlaygroundView extends ItemView {
     private iframe!: HTMLIFrameElement;
-    private transformer: CodeTransformer;
     private renderer: IframeRenderer;
     private currentBlobUrl: string | null = null;
-    private settings: PlaygroundSettings;
+    private plugin: WebDevPlaygroundPlugin;
 
-    constructor(leaf: WorkspaceLeaf, settings: PlaygroundSettings) {
+    constructor(leaf: WorkspaceLeaf, plugin: WebDevPlaygroundPlugin) {
         super(leaf);
-        this.settings = settings;
-        this.transformer = new CodeTransformer(settings.loopProtectionTimeout);
+        this.plugin = plugin;
         this.renderer = new IframeRenderer();
     }
 
@@ -51,7 +49,7 @@ export class PlaygroundView extends ItemView {
         this.iframe.style.height = '100%';
         this.iframe.style.border = 'none';
 
-        if (this.settings.updateOnSaveOnly) {
+        if (this.plugin.settings.updateOnSaveOnly) {
             this.registerEvent(
                 this.app.vault.on('modify', () => {
                     this.updatePreview();
@@ -61,7 +59,7 @@ export class PlaygroundView extends ItemView {
             this.registerEvent(
                 this.app.workspace.on('editor-change', debounce(() => {
                     this.updatePreview();
-                }, this.settings.debounceTimeout))
+                }, this.plugin.settings.debounceTimeout))
             );
         }
 
@@ -89,7 +87,8 @@ export class PlaygroundView extends ItemView {
                 .filter(Boolean)
                 .join('\n');
 
-            const transformedJs = combinedJs ? this.transformer.transform(combinedJs) : '';
+            const transformer = new CodeTransformer(this.plugin.settings.loopProtectionTimeout);
+            const transformedJs = combinedJs ? transformer.transform(combinedJs) : '';
 
             const html = this.renderer.generateDocument({
                 html: extracted.html,
