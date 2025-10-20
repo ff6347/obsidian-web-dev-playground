@@ -21,20 +21,20 @@
 - Create: `package.json`
 - Create: `tsconfig.json`
 - Create: `manifest.json`
-- Create: `.nvmrc`
+- Create: `.mise.toml`
 - Create: `main.ts`
 
 **Step 1: Initialize package.json**
 
 ```bash
-npm init -y
+pnpm init
 ```
 
 **Step 2: Install dependencies**
 
 ```bash
-npm install --save-dev typescript obsidian @types/node esbuild
-npm install @babel/standalone @freecodecamp/loop-protect
+pnpm add -D typescript obsidian @types/node esbuild vitest
+pnpm add @babel/standalone @freecodecamp/loop-protect
 ```
 
 **Step 3: Create manifest.json**
@@ -102,24 +102,27 @@ Add to `package.json`:
 {
   "scripts": {
     "build": "esbuild src/main.ts --bundle --external:obsidian --outfile=main.js --format=cjs --target=es2020 --sourcemap",
-    "dev": "npm run build -- --watch"
+    "dev": "pnpm build -- --watch",
+    "test": "vitest",
+    "test:run": "vitest run"
   }
 }
 ```
 
-**Step 7: Test build**
+**Step 7: Create .mise.toml**
+
+```toml
+[tools]
+node = "24"
+```
+
+**Step 8: Test build**
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Expected: `main.js` created successfully
-
-**Step 8: Create .nvmrc**
-
-```
-20
-```
 
 **Step 9: Commit**
 
@@ -176,27 +179,10 @@ describe('CodeBlockExtractor', () => {
 });
 ```
 
-**Step 2: Install vitest**
+**Step 2: Run test to verify failure**
 
 ```bash
-npm install --save-dev vitest
-```
-
-Add to `package.json` scripts:
-
-```json
-{
-  "scripts": {
-    "test": "vitest",
-    "test:run": "vitest run"
-  }
-}
-```
-
-**Step 3: Run test to verify failure**
-
-```bash
-npm test
+pnpm test
 ```
 
 Expected: FAIL - CodeBlockExtractor not found
@@ -257,10 +243,10 @@ export class CodeBlockExtractor {
 }
 ```
 
-**Step 5: Run test to verify pass**
+**Step 3: Run test to verify pass**
 
 ```bash
-npm test
+pnpm test
 ```
 
 Expected: PASS - all tests green
@@ -318,7 +304,7 @@ describe('CodeTransformer', () => {
 **Step 2: Run test to verify failure**
 
 ```bash
-npm test
+pnpm test
 ```
 
 Expected: FAIL - CodeTransformer not found
@@ -434,7 +420,7 @@ describe('IframeRenderer', () => {
 **Step 2: Run test to verify failure**
 
 ```bash
-npm test
+pnpm test
 ```
 
 Expected: FAIL - IframeRenderer not found
@@ -671,7 +657,7 @@ export default class WebDevPlaygroundPlugin extends Plugin {
 **Step 3: Build and manually test**
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Expected: Build succeeds
@@ -915,7 +901,7 @@ export class PlaygroundView extends ItemView {
 **Step 5: Build and test**
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Expected: Build succeeds
@@ -1047,16 +1033,16 @@ console.log('Hello from the playground!');
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Build plugin
-npm run build
+pnpm build
 
 # Run tests
-npm test
+pnpm test
 
 # Watch mode
-npm run dev
+pnpm dev
 ```
 
 ## Installation
@@ -1088,8 +1074,8 @@ git commit -m "docs: add specification and usage documentation"
 
 After implementing all tasks:
 
-- [ ] All tests pass (`npm test`)
-- [ ] Plugin builds without errors (`npm run build`)
+- [ ] All tests pass (`pnpm test`)
+- [ ] Plugin builds without errors (`pnpm build`)
 - [ ] Manual testing in Obsidian vault
 - [ ] Code blocks extract correctly
 - [ ] TypeScript transforms to JavaScript
