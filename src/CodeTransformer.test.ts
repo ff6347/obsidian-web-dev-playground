@@ -26,4 +26,14 @@ describe('CodeTransformer', () => {
 
         expect(() => transformer.transform(badCode)).toThrow();
     });
+
+    it('throws when infinite loop is executed', () => {
+        const transformer = new CodeTransformer(100);
+        const code = 'while (true) { }';
+        const transformed = transformer.transform(code);
+
+        expect(() => {
+            new Function(transformed)();
+        }).toThrow('Infinite loop detected');
+    });
 });

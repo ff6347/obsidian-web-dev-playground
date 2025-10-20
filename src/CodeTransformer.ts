@@ -5,13 +5,18 @@ import * as Babel from '@babel/standalone';
 import protect from '@freecodecamp/loop-protect';
 
 export class CodeTransformer {
+    private static pluginRegistered = false;
+
     constructor(private loopTimeout: number = 100) {
-        Babel.registerPlugin(
-            'loopProtect',
-            protect(this.loopTimeout, (line: number) => {
-                throw new Error(`Infinite loop detected on line ${line}`);
-            })
-        );
+        if (!CodeTransformer.pluginRegistered) {
+            Babel.registerPlugin(
+                'loopProtect',
+                protect(this.loopTimeout, (line: number) => {
+                    throw new Error(`Infinite loop detected on line ${line}`);
+                })
+            );
+            CodeTransformer.pluginRegistered = true;
+        }
     }
 
     transform(source: string): string {
