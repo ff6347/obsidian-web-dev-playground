@@ -19,12 +19,14 @@ export class CodeBlockExtractor {
             ts: '',
         };
 
-        const codeBlockRegex = /```(\w+)\n([\s\S]*?)```/g;
+        const codeBlockRegex = /```(\w+)[\r\n]+([\s\S]*?)```/g;
         let match;
 
         while ((match = codeBlockRegex.exec(this.markdown)) !== null) {
-            const lang = match[1].toLowerCase();
-            const code = match[2].replace(/\n$/, '');
+            const lang = match[1]?.toLowerCase();
+            const code = match[2]?.trim();
+
+            if (!lang || !code) continue;
 
             switch (lang) {
                 case 'html':

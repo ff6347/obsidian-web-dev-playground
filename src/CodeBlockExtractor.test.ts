@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CodeBlockExtractor } from './CodeBlockExtractor';
+import { CodeBlockExtractor } from './CodeBlockExtractor.js';
 
 describe('CodeBlockExtractor', () => {
     it('extracts single HTML code block', () => {
@@ -29,5 +29,44 @@ describe('CodeBlockExtractor', () => {
         expect(result.html).toBe('<div></div>');
         expect(result.css).toBe('body{}');
         expect(result.js).toBe('console.log();');
+    });
+
+    it('returns empty strings for empty markdown', () => {
+        const markdown = '';
+        const extractor = new CodeBlockExtractor(markdown);
+        const result = extractor.extract();
+
+        expect(result.html).toBe('');
+        expect(result.css).toBe('');
+        expect(result.js).toBe('');
+        expect(result.ts).toBe('');
+    });
+
+    it('ignores unsupported languages', () => {
+        const markdown = '```python\nprint("hello")\n```\n```ruby\nputs "hello"\n```\n```js\nconsole.log();\n```';
+        const extractor = new CodeBlockExtractor(markdown);
+        const result = extractor.extract();
+
+        expect(result.html).toBe('');
+        expect(result.css).toBe('');
+        expect(result.js).toBe('console.log();');
+        expect(result.ts).toBe('');
+    });
+
+    it('handles Windows line endings (\\r\\n)', () => {
+        const markdown = '```html\r\n<h1>Hello</h1>\r\n```';
+        const extractor = new CodeBlockExtractor(markdown);
+        const result = extractor.extract();
+
+        expect(result.html).toBe('<h1>Hello</h1>');
+    });
+
+    it('maps typescript alias to ts field', () => {
+        const markdown = '```typescript\nconst x: number = 1;\n```';
+        const extractor = new CodeBlockExtractor(markdown);
+        const result = extractor.extract();
+
+        expect(result.ts).toBe('const x: number = 1;');
+        expect(result.js).toBe('');
     });
 });
