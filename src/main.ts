@@ -3,14 +3,20 @@
 
 import { Plugin, Notice } from 'obsidian';
 import { PlaygroundView, VIEW_TYPE_PLAYGROUND } from './PlaygroundView.js';
+import { PlaygroundSettingTab } from './settings-tab.js';
+import { DEFAULT_SETTINGS, type PlaygroundSettings } from './settings.js';
 
 export default class WebDevPlaygroundPlugin extends Plugin {
+    settings!: PlaygroundSettings;
+
     override async onload() {
         console.log('Loading Web Dev Playground plugin');
 
+        await this.loadSettings();
+
         this.registerView(
             VIEW_TYPE_PLAYGROUND,
-            (leaf) => new PlaygroundView(leaf)
+            (leaf) => new PlaygroundView(leaf, this.settings)
         );
 
         this.addRibbonIcon('code', 'Open Web Dev Playground', () => {
@@ -24,11 +30,21 @@ export default class WebDevPlaygroundPlugin extends Plugin {
                 this.activateView();
             },
         });
+
+        this.addSettingTab(new PlaygroundSettingTab(this.app, this));
     }
 
     override async onunload() {
         console.log('Unloading Web Dev Playground plugin');
         this.app.workspace.detachLeavesOfType(VIEW_TYPE_PLAYGROUND);
+    }
+
+    async loadSettings() {
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    }
+
+    async saveSettings() {
+        await this.saveData(this.settings);
     }
 
     async activateView() {

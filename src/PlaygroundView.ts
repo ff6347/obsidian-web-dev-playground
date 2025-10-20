@@ -5,6 +5,7 @@ import { ItemView, WorkspaceLeaf, MarkdownView, debounce } from 'obsidian';
 import { CodeBlockExtractor } from './CodeBlockExtractor.js';
 import { CodeTransformer } from './CodeTransformer.js';
 import { IframeRenderer } from './IframeRenderer.js';
+import type { PlaygroundSettings } from './settings.js';
 
 export const VIEW_TYPE_PLAYGROUND = 'web-dev-playground';
 
@@ -13,10 +14,12 @@ export class PlaygroundView extends ItemView {
     private transformer: CodeTransformer;
     private renderer: IframeRenderer;
     private currentBlobUrl: string | null = null;
+    private settings: PlaygroundSettings;
 
-    constructor(leaf: WorkspaceLeaf) {
+    constructor(leaf: WorkspaceLeaf, settings: PlaygroundSettings) {
         super(leaf);
-        this.transformer = new CodeTransformer(100);
+        this.settings = settings;
+        this.transformer = new CodeTransformer(settings.loopProtectionTimeout);
         this.renderer = new IframeRenderer();
     }
 
@@ -48,11 +51,19 @@ export class PlaygroundView extends ItemView {
         this.iframe.style.height = '100%';
         this.iframe.style.border = 'none';
 
-        this.registerEvent(
-            this.app.workspace.on('editor-change', debounce(() => {
-                this.updatePreview();
-            }, 500))
-        );
+        if (this.settings.updateOnSaveOnly) {
+            this.registerEvent(
+                this.app.vault.on('modify', () => {
+                    this.updatePreview();
+                })
+            );
+        } else {
+            this.registerEvent(
+                this.app.workspace.on('editor-change', debounce(() => {
+                    this.updatePreview();
+                }, this.settings.debounceTimeout))
+            );
+        }
 
         this.updatePreview();
     }
