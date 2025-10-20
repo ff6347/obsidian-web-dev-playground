@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CodeTransformer } from './CodeTransformer';
+import { CodeTransformer } from './CodeTransformer.js';
 
 describe('CodeTransformer', () => {
     it('transforms TypeScript to JavaScript', () => {

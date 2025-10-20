@@ -34,24 +34,27 @@ export class PlaygroundView extends ItemView {
 
     override async onOpen() {
         const container = this.containerEl.children[1];
-        if (container) {
-            container.empty();
-            container.addClass('playground-view');
-
-            this.iframe = container.createEl('iframe');
-            this.iframe.addClass('playground-iframe');
-            this.iframe.style.width = '100%';
-            this.iframe.style.height = '100%';
-            this.iframe.style.border = 'none';
-
-            this.registerEvent(
-                this.app.workspace.on('editor-change', debounce(() => {
-                    this.updatePreview();
-                }, 500))
-            );
-
-            this.updatePreview();
+        if (!container) {
+            console.error('PlaygroundView: container element not found');
+            return;
         }
+
+        container.empty();
+        container.addClass('playground-view');
+
+        this.iframe = container.createEl('iframe');
+        this.iframe.addClass('playground-iframe');
+        this.iframe.style.width = '100%';
+        this.iframe.style.height = '100%';
+        this.iframe.style.border = 'none';
+
+        this.registerEvent(
+            this.app.workspace.on('editor-change', debounce(() => {
+                this.updatePreview();
+            }, 500))
+        );
+
+        this.updatePreview();
     }
 
     override async onClose() {
@@ -92,8 +95,9 @@ export class PlaygroundView extends ItemView {
             this.iframe.src = this.currentBlobUrl;
         } catch (error) {
             console.error('Preview update failed:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
             const errorHtml = this.renderer.generateDocument({
-                html: `<pre style="color: red; padding: 1rem;">${error}</pre>`,
+                html: `<pre style="color: red; padding: 1rem;">${errorMessage}</pre>`,
                 css: '',
                 js: '',
             });

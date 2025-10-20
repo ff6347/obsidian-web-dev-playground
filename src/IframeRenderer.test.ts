@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IframeRenderer } from './IframeRenderer';
+import { IframeRenderer } from './IframeRenderer.js';
 
 describe('IframeRenderer', () => {
     it('generates complete HTML document', () => {

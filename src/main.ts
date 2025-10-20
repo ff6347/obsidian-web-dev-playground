@@ -1,7 +1,7 @@
 // ABOUTME: Main entry point for the Obsidian Web Dev Playground plugin
 // ABOUTME: Registers the playground view and commands
 
-import { Plugin } from 'obsidian';
+import { Plugin, Notice } from 'obsidian';
 import { PlaygroundView, VIEW_TYPE_PLAYGROUND } from './PlaygroundView.js';
 
 export default class WebDevPlaygroundPlugin extends Plugin {
@@ -38,17 +38,18 @@ export default class WebDevPlaygroundPlugin extends Plugin {
 
         if (!leaf) {
             const rightLeaf = workspace.getRightLeaf(false);
-            if (rightLeaf) {
-                leaf = rightLeaf;
-                await leaf.setViewState({
-                    type: VIEW_TYPE_PLAYGROUND,
-                    active: true,
-                });
+            if (!rightLeaf) {
+                console.warn('Failed to create leaf for Web Dev Playground');
+                new Notice('Could not open Web Dev Playground. Please try again.');
+                return;
             }
+            leaf = rightLeaf;
+            await leaf.setViewState({
+                type: VIEW_TYPE_PLAYGROUND,
+                active: true,
+            });
         }
 
-        if (leaf) {
-            workspace.revealLeaf(leaf);
-        }
+        workspace.revealLeaf(leaf);
     }
 }
