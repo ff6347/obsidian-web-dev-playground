@@ -21,8 +21,10 @@
 - Create: `package.json`
 - Create: `tsconfig.json`
 - Create: `manifest.json`
-- Create: `.mise.toml`
-- Create: `main.ts`
+- Create: `mise.toml`
+- Create: `build.js`
+- Create: `vitest.config.ts`
+- Create: `src/main.ts`
 
 **Step 1: Initialize package.json**
 
@@ -33,7 +35,7 @@ pnpm init
 **Step 2: Install dependencies**
 
 ```bash
-pnpm add -D typescript obsidian @types/node esbuild vitest
+pnpm add -D typescript obsidian @types/node builtin-modules rolldown vitest jsdom @vitest/ui
 pnpm add @babel/standalone @freecodecamp/loop-protect
 ```
 
@@ -51,72 +53,186 @@ pnpm add @babel/standalone @freecodecamp/loop-protect
 }
 ```
 
-**Step 4: Create tsconfig.json**
+**Step 4: Update package.json**
+
+Edit `package.json` to add:
 
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM"],
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": "src"
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}
-```
-
-**Step 5: Create basic main.ts**
-
-Create: `src/main.ts`
-
-```typescript
-// ABOUTME: Main entry point for the Obsidian Web Dev Playground plugin
-// ABOUTME: Registers the playground view and commands
-import { Plugin } from 'obsidian';
-
-export default class WebDevPlaygroundPlugin extends Plugin {
-    async onload() {
-        console.log('Loading Web Dev Playground plugin');
-    }
-
-    async onunload() {
-        console.log('Unloading Web Dev Playground plugin');
-    }
-}
-```
-
-**Step 6: Create build script in package.json**
-
-Add to `package.json`:
-
-```json
-{
+  "name": "obsidian-web-dev-playground",
+  "version": "0.1.0",
+  "main": "main.js",
+  "type": "module",
+  "packageManager": "pnpm@10.15.1",
+  "private": true,
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --external:obsidian --outfile=main.js --format=cjs --target=es2020 --sourcemap",
-    "dev": "pnpm build -- --watch",
+    "dev": "node build.js --watch",
+    "build": "node build.js --production",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc --noEmit"
   }
 }
 ```
 
-**Step 7: Create .mise.toml**
+**Step 5: Create tsconfig.json**
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "nodenext",
+    "target": "esnext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "types": [],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  }
+}
+```
+
+**Step 6: Create build.js**
+
+```javascript
+import { rolldown, watch } from "rolldown";
+import builtins from "builtin-modules";
+import { parseArgs } from "node:util";
+
+const args = parseArgs({
+  options: {
+    production: { type: "boolean", short: "p" },
+    watch: { type: "boolean", short: "w" },
+  },
+});
+
+const prod = args.values.production;
+const watchMode = args.values.watch;
+
+const config = {
+  input: "src/main.ts",
+  output: {
+    file: "main.js",
+    format: "cjs",
+    sourcemap: prod ? false : "inline",
+  },
+  external: [
+    "obsidian",
+    "electron",
+    "@codemirror/autocomplete",
+    "@codemirror/collab",
+    "@codemirror/commands",
+    "@codemirror/language",
+    "@codemirror/lint",
+    "@codemirror/search",
+    "@codemirror/state",
+    "@codemirror/view",
+    "@lezer/common",
+    "@lezer/highlight",
+    "@lezer/lr",
+    ...builtins,
+  ],
+  logLevel: "info",
+  minify: false,
+};
+
+if (watchMode) {
+  console.info("Starting rolldown in watch mode...");
+  const watcher = watch(config);
+
+  watcher.on("event", (event) => {
+    if (event.code === "BUNDLE_START") {
+      console.info("Building...");
+    } else if (event.code === "BUNDLE_END") {
+      console.info("Build completed");
+    } else if (event.code === "ERROR") {
+      console.error("Build error:", event.error);
+    }
+  });
+
+  process.on("SIGINT", async () => {
+    console.info("Closing watcher...");
+    await watcher.close();
+    process.exit(0);
+  });
+} else {
+  console.info(`Building for ${prod ? "production" : "development"}...`);
+
+  try {
+    const bundle = await rolldown(config);
+    await bundle.write(config.output);
+    console.info("Build completed successfully!");
+    process.exit(0);
+  } catch (error) {
+    console.error("Build failed:", error);
+    process.exit(1);
+  }
+}
+```
+
+**Step 7: Create vitest.config.ts**
+
+```typescript
+import { defineConfig } from "vitest/config";
+import { resolve } from "path";
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: "jsdom",
+    include: ["src/**/*.test.ts"],
+    exclude: ["node_modules", "dist", "build"],
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src"),
+    },
+  },
+});
+```
+
+**Step 8: Create src/main.ts**
+
+```typescript
+// ABOUTME: Main entry point for the Obsidian Web Dev Playground plugin
+// ABOUTME: Registers the playground view and commands
+import { Plugin } from "obsidian";
+
+export default class WebDevPlaygroundPlugin extends Plugin {
+  async onload() {
+    console.log("Loading Web Dev Playground plugin");
+  }
+
+  async onunload() {
+    console.log("Unloading Web Dev Playground plugin");
+  }
+}
+```
+
+**Step 9: Create mise.toml**
 
 ```toml
 [tools]
 node = "24"
+pnpm = "latest"
 ```
 
-**Step 8: Test build**
+**Step 10: Test build**
 
 ```bash
 pnpm build
@@ -124,7 +240,7 @@ pnpm build
 
 Expected: `main.js` created successfully
 
-**Step 9: Commit**
+**Step 11: Commit**
 
 ```bash
 git add .
