@@ -19,6 +19,8 @@ export class CodeBlockExtractor {
             ts: '',
         };
 
+        // Only matches code blocks with a language identifier (e.g., ```js).
+        // Language-less code blocks (just ```) are intentionally excluded.
         const codeBlockRegex = /```(\w+)[\r\n]+([\s\S]*?)```/g;
         let match;
 
