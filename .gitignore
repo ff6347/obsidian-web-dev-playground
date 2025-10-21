@@ -3,3 +3,6 @@
 node_modules/
 *.log
 dist/
+main.js
+.DS_Store
+data.json
