@@ -7,24 +7,27 @@ Minimal Obsidian plugin for sketching web development ideas directly in notes. R
 ## Core Features
 
 ### Code Block Extraction
+
 - Scans active note for code blocks with languages: `html`, `css`, `js`, `ts`, `javascript`, `typescript`
 - Concatenates multiple blocks of same type in document order
 - Example: Two `js` blocks become one combined script
 
 ### Live Preview
+
 - Renders in right sidebar panel
-- Updates on typing (debounced) or save (configurable)
+- Updates on typing with debounced updates
 - Default template injects user code into structured HTML document
 - Uses iframe with blob URL for isolation
 
 ### Code Transformation
+
 - TypeScript → JavaScript via Babel
 - Infinite loop protection via `@freecodecamp/loop-protect`
 - Syntax errors displayed in preview
 
 ### Settings
+
 - Debounce timeout (100-2000ms, default 500ms)
-- Update mode toggle (debounced vs save-only)
 - Loop protection timeout (50-1000ms, default 100ms)
 
 ## Architecture
@@ -40,15 +43,21 @@ Active Note → CodeBlockExtractor → CodeTransformer → IframeRenderer → Si
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>{USER_CSS}</style>
-</head>
-<body>
-  <main>{USER_HTML}</main>
-  <script>{TRANSFORMED_JS}</script>
-</body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<style>
+			{USER_CSS}
+		</style>
+	</head>
+	<body>
+		<main>{USER_HTML}</main>
+		<script>
+			{
+				TRANSFORMED_JS;
+			}
+		</script>
+	</body>
 </html>
 ```
 

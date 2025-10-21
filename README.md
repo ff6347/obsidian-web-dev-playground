@@ -7,10 +7,10 @@ Minimal playground for sketching out web development ideas directly in your note
 ## Features
 
 - Extract and render code blocks from active note
-- Live preview in sidebar (debounced or on-save)
+- Live preview in sidebar with debounced updates
 - TypeScript support with Babel transformation
 - Infinite loop protection
-- Configurable update timing
+- Configurable debounce timing
 
 ## Usage
 
@@ -21,11 +21,13 @@ Minimal playground for sketching out web development ideas directly in your note
 ```
 
 ```css
-h1 { color: blue; }
+h1 {
+	color: blue;
+}
 ```
 
 ```js
-console.log('Hello from the playground!');
+console.log("Hello from the playground!");
 ```
 
 2. Open the playground view:
@@ -62,5 +64,4 @@ pnpm dev
 ## Settings
 
 - **Debounce timeout**: Delay before updating preview (100-2000ms)
-- **Update on save only**: Only update when file is saved
 - **Loop protection timeout**: Timeout for infinite loop detection (50-1000ms)

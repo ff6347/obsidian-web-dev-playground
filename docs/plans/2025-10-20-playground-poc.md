@@ -7,6 +7,7 @@
 **Architecture:** Extract code blocks from active markdown file, transform JS/TS through Babel with loop protection, inject into default HTML template, render in sidebar iframe with debounced updates. Keep it simple - POC first, optimization later.
 
 **Tech Stack:**
+
 - TypeScript
 - Obsidian Plugin API
 - `@babel/standalone`
@@ -18,6 +19,7 @@
 ## Task 1: Project Setup
 
 **Files:**
+
 - Create: `package.json`
 - Create: `tsconfig.json`
 - Create: `manifest.json`
@@ -43,13 +45,13 @@ pnpm add @babel/standalone @freecodecamp/loop-protect
 
 ```json
 {
-  "id": "web-dev-playground",
-  "name": "Web Dev Playground",
-  "version": "0.1.0",
-  "minAppVersion": "0.15.0",
-  "description": "Render HTML/CSS/JS/TS code blocks in a live preview sidebar",
-  "author": "Fabian Morón Zirfas",
-  "isDesktopOnly": false
+	"id": "web-dev-playground",
+	"name": "Web Dev Playground",
+	"version": "0.1.0",
+	"minAppVersion": "0.15.0",
+	"description": "Render HTML/CSS/JS/TS code blocks in a live preview sidebar",
+	"author": "Fabian Morón Zirfas",
+	"isDesktopOnly": false
 }
 ```
 
@@ -59,20 +61,20 @@ Edit `package.json` to add:
 
 ```json
 {
-  "name": "obsidian-web-dev-playground",
-  "version": "0.1.0",
-  "main": "main.js",
-  "type": "module",
-  "packageManager": "pnpm@10.15.1",
-  "private": true,
-  "scripts": {
-    "dev": "node build.js --watch",
-    "build": "node build.js --production",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:watch": "vitest --watch",
-    "typecheck": "tsc --noEmit"
-  }
+	"name": "obsidian-web-dev-playground",
+	"version": "0.1.0",
+	"main": "main.js",
+	"type": "module",
+	"packageManager": "pnpm@10.15.1",
+	"private": true,
+	"scripts": {
+		"dev": "node build.js --watch",
+		"build": "node build.js --production",
+		"test": "vitest",
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest --watch",
+		"typecheck": "tsc --noEmit"
+	}
 }
 ```
 
@@ -80,30 +82,30 @@ Edit `package.json` to add:
 
 ```json
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "module": "nodenext",
-    "target": "esnext",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "types": [],
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-    "noImplicitOverride": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
-  }
+	"compilerOptions": {
+		"baseUrl": ".",
+		"module": "nodenext",
+		"target": "esnext",
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"types": [],
+		"sourceMap": true,
+		"declaration": true,
+		"declarationMap": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"strict": true,
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"skipLibCheck": true
+	}
 }
 ```
 
@@ -115,73 +117,73 @@ import builtins from "builtin-modules";
 import { parseArgs } from "node:util";
 
 const args = parseArgs({
-  options: {
-    production: { type: "boolean", short: "p" },
-    watch: { type: "boolean", short: "w" },
-  },
+	options: {
+		production: { type: "boolean", short: "p" },
+		watch: { type: "boolean", short: "w" },
+	},
 });
 
 const prod = args.values.production;
 const watchMode = args.values.watch;
 
 const config = {
-  input: "src/main.ts",
-  output: {
-    file: "main.js",
-    format: "cjs",
-    sourcemap: prod ? false : "inline",
-  },
-  external: [
-    "obsidian",
-    "electron",
-    "@codemirror/autocomplete",
-    "@codemirror/collab",
-    "@codemirror/commands",
-    "@codemirror/language",
-    "@codemirror/lint",
-    "@codemirror/search",
-    "@codemirror/state",
-    "@codemirror/view",
-    "@lezer/common",
-    "@lezer/highlight",
-    "@lezer/lr",
-    ...builtins,
-  ],
-  logLevel: "info",
-  minify: false,
+	input: "src/main.ts",
+	output: {
+		file: "main.js",
+		format: "cjs",
+		sourcemap: prod ? false : "inline",
+	},
+	external: [
+		"obsidian",
+		"electron",
+		"@codemirror/autocomplete",
+		"@codemirror/collab",
+		"@codemirror/commands",
+		"@codemirror/language",
+		"@codemirror/lint",
+		"@codemirror/search",
+		"@codemirror/state",
+		"@codemirror/view",
+		"@lezer/common",
+		"@lezer/highlight",
+		"@lezer/lr",
+		...builtins,
+	],
+	logLevel: "info",
+	minify: false,
 };
 
 if (watchMode) {
-  console.info("Starting rolldown in watch mode...");
-  const watcher = watch(config);
+	console.info("Starting rolldown in watch mode...");
+	const watcher = watch(config);
 
-  watcher.on("event", (event) => {
-    if (event.code === "BUNDLE_START") {
-      console.info("Building...");
-    } else if (event.code === "BUNDLE_END") {
-      console.info("Build completed");
-    } else if (event.code === "ERROR") {
-      console.error("Build error:", event.error);
-    }
-  });
+	watcher.on("event", (event) => {
+		if (event.code === "BUNDLE_START") {
+			console.info("Building...");
+		} else if (event.code === "BUNDLE_END") {
+			console.info("Build completed");
+		} else if (event.code === "ERROR") {
+			console.error("Build error:", event.error);
+		}
+	});
 
-  process.on("SIGINT", async () => {
-    console.info("Closing watcher...");
-    await watcher.close();
-    process.exit(0);
-  });
+	process.on("SIGINT", async () => {
+		console.info("Closing watcher...");
+		await watcher.close();
+		process.exit(0);
+	});
 } else {
-  console.info(`Building for ${prod ? "production" : "development"}...`);
+	console.info(`Building for ${prod ? "production" : "development"}...`);
 
-  try {
-    const bundle = await rolldown(config);
-    await bundle.write(config.output);
-    console.info("Build completed successfully!");
-    process.exit(0);
-  } catch (error) {
-    console.error("Build failed:", error);
-    process.exit(1);
-  }
+	try {
+		const bundle = await rolldown(config);
+		await bundle.write(config.output);
+		console.info("Build completed successfully!");
+		process.exit(0);
+	} catch (error) {
+		console.error("Build failed:", error);
+		process.exit(1);
+	}
 }
 ```
 
@@ -192,17 +194,17 @@ import { defineConfig } from "vitest/config";
 import { resolve } from "path";
 
 export default defineConfig({
-  test: {
-    globals: true,
-    environment: "jsdom",
-    include: ["src/**/*.test.ts"],
-    exclude: ["node_modules", "dist", "build"],
-  },
-  resolve: {
-    alias: {
-      "@": resolve(__dirname, "./src"),
-    },
-  },
+	test: {
+		globals: true,
+		environment: "jsdom",
+		include: ["src/**/*.test.ts"],
+		exclude: ["node_modules", "dist", "build"],
+	},
+	resolve: {
+		alias: {
+			"@": resolve(__dirname, "./src"),
+		},
+	},
 });
 ```
 
@@ -214,13 +216,13 @@ export default defineConfig({
 import { Plugin } from "obsidian";
 
 export default class WebDevPlaygroundPlugin extends Plugin {
-  async onload() {
-    console.log("Loading Web Dev Playground plugin");
-  }
+	async onload() {
+		console.log("Loading Web Dev Playground plugin");
+	}
 
-  async onunload() {
-    console.log("Unloading Web Dev Playground plugin");
-  }
+	async onunload() {
+		console.log("Unloading Web Dev Playground plugin");
+	}
 }
 ```
 
@@ -252,6 +254,7 @@ git commit -m "feat: initialize Obsidian plugin project structure"
 ## Task 2: Code Block Extractor
 
 **Files:**
+
 - Create: `src/CodeBlockExtractor.ts`
 - Create: `src/CodeBlockExtractor.test.ts`
 
@@ -259,41 +262,43 @@ git commit -m "feat: initialize Obsidian plugin project structure"
 
 Create: `src/CodeBlockExtractor.test.ts`
 
-```typescript
-import { describe, it, expect } from 'vitest';
-import { CodeBlockExtractor } from './CodeBlockExtractor';
+````typescript
+import { describe, it, expect } from "vitest";
+import { CodeBlockExtractor } from "./CodeBlockExtractor";
 
-describe('CodeBlockExtractor', () => {
-    it('extracts single HTML code block', () => {
-        const markdown = '```html\n<h1>Hello</h1>\n```';
-        const extractor = new CodeBlockExtractor(markdown);
-        const result = extractor.extract();
+describe("CodeBlockExtractor", () => {
+	it("extracts single HTML code block", () => {
+		const markdown = "```html\n<h1>Hello</h1>\n```";
+		const extractor = new CodeBlockExtractor(markdown);
+		const result = extractor.extract();
 
-        expect(result.html).toBe('<h1>Hello</h1>');
-        expect(result.css).toBe('');
-        expect(result.js).toBe('');
-        expect(result.ts).toBe('');
-    });
+		expect(result.html).toBe("<h1>Hello</h1>");
+		expect(result.css).toBe("");
+		expect(result.js).toBe("");
+		expect(result.ts).toBe("");
+	});
 
-    it('extracts and concatenates multiple blocks of same type', () => {
-        const markdown = '```js\nconst a = 1;\n```\n\nSome text\n\n```js\nconst b = 2;\n```';
-        const extractor = new CodeBlockExtractor(markdown);
-        const result = extractor.extract();
+	it("extracts and concatenates multiple blocks of same type", () => {
+		const markdown =
+			"```js\nconst a = 1;\n```\n\nSome text\n\n```js\nconst b = 2;\n```";
+		const extractor = new CodeBlockExtractor(markdown);
+		const result = extractor.extract();
 
-        expect(result.js).toBe('const a = 1;\nconst b = 2;');
-    });
+		expect(result.js).toBe("const a = 1;\nconst b = 2;");
+	});
 
-    it('extracts mixed block types in order', () => {
-        const markdown = '```html\n<div></div>\n```\n```css\nbody{}\n```\n```js\nconsole.log();\n```';
-        const extractor = new CodeBlockExtractor(markdown);
-        const result = extractor.extract();
+	it("extracts mixed block types in order", () => {
+		const markdown =
+			"```html\n<div></div>\n```\n```css\nbody{}\n```\n```js\nconsole.log();\n```";
+		const extractor = new CodeBlockExtractor(markdown);
+		const result = extractor.extract();
 
-        expect(result.html).toBe('<div></div>');
-        expect(result.css).toBe('body{}');
-        expect(result.js).toBe('console.log();');
-    });
+		expect(result.html).toBe("<div></div>");
+		expect(result.css).toBe("body{}");
+		expect(result.js).toBe("console.log();");
+	});
 });
-```
+````
 
 **Step 2: Run test to verify failure**
 
@@ -307,57 +312,57 @@ Expected: FAIL - CodeBlockExtractor not found
 
 Create: `src/CodeBlockExtractor.ts`
 
-```typescript
+````typescript
 // ABOUTME: Extracts and concatenates code blocks from markdown by language type
 // ABOUTME: Supports html, css, js, ts, javascript, typescript blocks in document order
 
 export interface ExtractedCode {
-    html: string;
-    css: string;
-    js: string;
-    ts: string;
+	html: string;
+	css: string;
+	js: string;
+	ts: string;
 }
 
 export class CodeBlockExtractor {
-    constructor(private markdown: string) {}
+	constructor(private markdown: string) {}
 
-    extract(): ExtractedCode {
-        const result: ExtractedCode = {
-            html: '',
-            css: '',
-            js: '',
-            ts: '',
-        };
+	extract(): ExtractedCode {
+		const result: ExtractedCode = {
+			html: "",
+			css: "",
+			js: "",
+			ts: "",
+		};
 
-        const codeBlockRegex = /```(\w+)\n([\s\S]*?)```/g;
-        let match;
+		const codeBlockRegex = /```(\w+)\n([\s\S]*?)```/g;
+		let match;
 
-        while ((match = codeBlockRegex.exec(this.markdown)) !== null) {
-            const lang = match[1].toLowerCase();
-            const code = match[2];
+		while ((match = codeBlockRegex.exec(this.markdown)) !== null) {
+			const lang = match[1].toLowerCase();
+			const code = match[2];
 
-            switch (lang) {
-                case 'html':
-                    result.html += (result.html ? '\n' : '') + code;
-                    break;
-                case 'css':
-                    result.css += (result.css ? '\n' : '') + code;
-                    break;
-                case 'js':
-                case 'javascript':
-                    result.js += (result.js ? '\n' : '') + code;
-                    break;
-                case 'ts':
-                case 'typescript':
-                    result.ts += (result.ts ? '\n' : '') + code;
-                    break;
-            }
-        }
+			switch (lang) {
+				case "html":
+					result.html += (result.html ? "\n" : "") + code;
+					break;
+				case "css":
+					result.css += (result.css ? "\n" : "") + code;
+					break;
+				case "js":
+				case "javascript":
+					result.js += (result.js ? "\n" : "") + code;
+					break;
+				case "ts":
+				case "typescript":
+					result.ts += (result.ts ? "\n" : "") + code;
+					break;
+			}
+		}
 
-        return result;
-    }
+		return result;
+	}
 }
-```
+````
 
 **Step 3: Run test to verify pass**
 
@@ -379,6 +384,7 @@ git commit -m "feat: add code block extractor with concatenation support"
 ## Task 3: Code Transformer (Babel + Loop Protection)
 
 **Files:**
+
 - Create: `src/CodeTransformer.ts`
 - Create: `src/CodeTransformer.test.ts`
 
@@ -387,33 +393,33 @@ git commit -m "feat: add code block extractor with concatenation support"
 Create: `src/CodeTransformer.test.ts`
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { CodeTransformer } from './CodeTransformer';
+import { describe, it, expect } from "vitest";
+import { CodeTransformer } from "./CodeTransformer";
 
-describe('CodeTransformer', () => {
-    it('transforms TypeScript to JavaScript', () => {
-        const transformer = new CodeTransformer(100);
-        const ts = 'const greet = (name: string): string => `Hello ${name}`;';
-        const result = transformer.transform(ts);
+describe("CodeTransformer", () => {
+	it("transforms TypeScript to JavaScript", () => {
+		const transformer = new CodeTransformer(100);
+		const ts = "const greet = (name: string): string => `Hello ${name}`;";
+		const result = transformer.transform(ts);
 
-        expect(result).toContain('Hello');
-        expect(result).not.toContain(': string');
-    });
+		expect(result).toContain("Hello");
+		expect(result).not.toContain(": string");
+	});
 
-    it('injects loop protection', () => {
-        const transformer = new CodeTransformer(100);
-        const code = 'while (true) { }';
-        const result = transformer.transform(code);
+	it("injects loop protection", () => {
+		const transformer = new CodeTransformer(100);
+		const code = "while (true) { }";
+		const result = transformer.transform(code);
 
-        expect(result).toContain('loopProtect');
-    });
+		expect(result).toContain("loopProtect");
+	});
 
-    it('throws on syntax error', () => {
-        const transformer = new CodeTransformer(100);
-        const badCode = 'const x = {';
+	it("throws on syntax error", () => {
+		const transformer = new CodeTransformer(100);
+		const badCode = "const x = {";
 
-        expect(() => transformer.transform(badCode)).toThrow();
-    });
+		expect(() => transformer.transform(badCode)).toThrow();
+	});
 });
 ```
 
@@ -433,30 +439,30 @@ Create: `src/CodeTransformer.ts`
 // ABOUTME: Transforms TypeScript to JavaScript using Babel with infinite loop protection
 // ABOUTME: Uses @freecodecamp/loop-protect plugin to prevent infinite loops
 
-import * as Babel from '@babel/standalone';
-import protect from '@freecodecamp/loop-protect';
+import * as Babel from "@babel/standalone";
+import protect from "@freecodecamp/loop-protect";
 
 export class CodeTransformer {
-    constructor(private loopTimeout: number = 100) {
-        Babel.registerPlugin(
-            'loopProtect',
-            protect(this.loopTimeout, (line: number) => {
-                throw new Error(`Infinite loop detected on line ${line}`);
-            })
-        );
-    }
+	constructor(private loopTimeout: number = 100) {
+		Babel.registerPlugin(
+			"loopProtect",
+			protect(this.loopTimeout, (line: number) => {
+				throw new Error(`Infinite loop detected on line ${line}`);
+			}),
+		);
+	}
 
-    transform(source: string): string {
-        try {
-            const result = Babel.transform(source, {
-                presets: ['typescript'],
-                plugins: ['loopProtect'],
-            });
-            return result.code || '';
-        } catch (error) {
-            throw new Error(`Transformation failed: ${error}`);
-        }
-    }
+	transform(source: string): string {
+		try {
+			const result = Babel.transform(source, {
+				presets: ["typescript"],
+				plugins: ["loopProtect"],
+			});
+			return result.code || "";
+		} catch (error) {
+			throw new Error(`Transformation failed: ${error}`);
+		}
+	}
 }
 ```
 
@@ -480,6 +486,7 @@ git commit -m "feat: add code transformer with Babel and loop protection"
 ## Task 4: Iframe Renderer
 
 **Files:**
+
 - Create: `src/IframeRenderer.ts`
 - Create: `src/IframeRenderer.test.ts`
 
@@ -488,48 +495,48 @@ git commit -m "feat: add code transformer with Babel and loop protection"
 Create: `src/IframeRenderer.test.ts`
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { IframeRenderer } from './IframeRenderer';
+import { describe, it, expect } from "vitest";
+import { IframeRenderer } from "./IframeRenderer";
 
-describe('IframeRenderer', () => {
-    it('generates complete HTML document', () => {
-        const renderer = new IframeRenderer();
-        const html = renderer.generateDocument({
-            html: '<h1>Test</h1>',
-            css: 'h1 { color: red; }',
-            js: 'console.log("hi");',
-        });
+describe("IframeRenderer", () => {
+	it("generates complete HTML document", () => {
+		const renderer = new IframeRenderer();
+		const html = renderer.generateDocument({
+			html: "<h1>Test</h1>",
+			css: "h1 { color: red; }",
+			js: 'console.log("hi");',
+		});
 
-        expect(html).toContain('<!DOCTYPE html>');
-        expect(html).toContain('<h1>Test</h1>');
-        expect(html).toContain('h1 { color: red; }');
-        expect(html).toContain('console.log("hi");');
-    });
+		expect(html).toContain("<!DOCTYPE html>");
+		expect(html).toContain("<h1>Test</h1>");
+		expect(html).toContain("h1 { color: red; }");
+		expect(html).toContain('console.log("hi");');
+	});
 
-    it('injects content into template structure', () => {
-        const renderer = new IframeRenderer();
-        const html = renderer.generateDocument({
-            html: '<p>Content</p>',
-            css: '',
-            js: '',
-        });
+	it("injects content into template structure", () => {
+		const renderer = new IframeRenderer();
+		const html = renderer.generateDocument({
+			html: "<p>Content</p>",
+			css: "",
+			js: "",
+		});
 
-        expect(html).toContain('<main>');
-        expect(html).toContain('</main>');
-        expect(html).toContain('<p>Content</p>');
-    });
+		expect(html).toContain("<main>");
+		expect(html).toContain("</main>");
+		expect(html).toContain("<p>Content</p>");
+	});
 
-    it('handles empty content', () => {
-        const renderer = new IframeRenderer();
-        const html = renderer.generateDocument({
-            html: '',
-            css: '',
-            js: '',
-        });
+	it("handles empty content", () => {
+		const renderer = new IframeRenderer();
+		const html = renderer.generateDocument({
+			html: "",
+			css: "",
+			js: "",
+		});
 
-        expect(html).toContain('<!DOCTYPE html>');
-        expect(html).toContain('<main>');
-    });
+		expect(html).toContain("<!DOCTYPE html>");
+		expect(html).toContain("<main>");
+	});
 });
 ```
 
@@ -550,14 +557,14 @@ Create: `src/IframeRenderer.ts`
 // ABOUTME: Uses default template with meta tags and injects user content into main element
 
 export interface RenderContent {
-    html: string;
-    css: string;
-    js: string;
+	html: string;
+	css: string;
+	js: string;
 }
 
 export class IframeRenderer {
-    generateDocument(content: RenderContent): string {
-        return `<!DOCTYPE html>
+	generateDocument(content: RenderContent): string {
+		return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -569,7 +576,7 @@ export class IframeRenderer {
   <script>${content.js}</script>
 </body>
 </html>`;
-    }
+	}
 }
 ```
 
@@ -593,6 +600,7 @@ git commit -m "feat: add iframe renderer with default HTML template"
 ## Task 5: Playground View (Sidebar)
 
 **Files:**
+
 - Create: `src/PlaygroundView.ts`
 - Modify: `src/main.ts`
 
@@ -604,108 +612,113 @@ Create: `src/PlaygroundView.ts`
 // ABOUTME: Custom Obsidian view that displays live preview of code blocks in sidebar
 // ABOUTME: Manages iframe rendering, debounced updates, and code extraction pipeline
 
-import { ItemView, WorkspaceLeaf, MarkdownView, debounce } from 'obsidian';
-import { CodeBlockExtractor } from './CodeBlockExtractor';
-import { CodeTransformer } from './CodeTransformer';
-import { IframeRenderer } from './IframeRenderer';
+import { ItemView, WorkspaceLeaf, MarkdownView, debounce } from "obsidian";
+import { CodeBlockExtractor } from "./CodeBlockExtractor";
+import { CodeTransformer } from "./CodeTransformer";
+import { IframeRenderer } from "./IframeRenderer";
 
-export const VIEW_TYPE_PLAYGROUND = 'web-dev-playground';
+export const VIEW_TYPE_PLAYGROUND = "web-dev-playground";
 
 export class PlaygroundView extends ItemView {
-    private iframe: HTMLIFrameElement;
-    private transformer: CodeTransformer;
-    private renderer: IframeRenderer;
-    private currentBlobUrl: string | null = null;
+	private iframe: HTMLIFrameElement;
+	private transformer: CodeTransformer;
+	private renderer: IframeRenderer;
+	private currentBlobUrl: string | null = null;
 
-    constructor(leaf: WorkspaceLeaf) {
-        super(leaf);
-        this.transformer = new CodeTransformer(100);
-        this.renderer = new IframeRenderer();
-    }
+	constructor(leaf: WorkspaceLeaf) {
+		super(leaf);
+		this.transformer = new CodeTransformer(100);
+		this.renderer = new IframeRenderer();
+	}
 
-    getViewType(): string {
-        return VIEW_TYPE_PLAYGROUND;
-    }
+	getViewType(): string {
+		return VIEW_TYPE_PLAYGROUND;
+	}
 
-    getDisplayText(): string {
-        return 'Web Dev Playground';
-    }
+	getDisplayText(): string {
+		return "Web Dev Playground";
+	}
 
-    getIcon(): string {
-        return 'code';
-    }
+	getIcon(): string {
+		return "code";
+	}
 
-    async onOpen() {
-        const container = this.containerEl.children[1];
-        container.empty();
-        container.addClass('playground-view');
+	async onOpen() {
+		const container = this.containerEl.children[1];
+		container.empty();
+		container.addClass("playground-view");
 
-        this.iframe = container.createEl('iframe');
-        this.iframe.addClass('playground-iframe');
-        this.iframe.style.width = '100%';
-        this.iframe.style.height = '100%';
-        this.iframe.style.border = 'none';
+		this.iframe = container.createEl("iframe");
+		this.iframe.addClass("playground-iframe");
+		this.iframe.style.width = "100%";
+		this.iframe.style.height = "100%";
+		this.iframe.style.border = "none";
 
-        this.registerEvent(
-            this.app.workspace.on('editor-change', debounce(() => {
-                this.updatePreview();
-            }, 500))
-        );
+		this.registerEvent(
+			this.app.workspace.on(
+				"editor-change",
+				debounce(() => {
+					this.updatePreview();
+				}, 500),
+			),
+		);
 
-        this.updatePreview();
-    }
+		this.updatePreview();
+	}
 
-    async onClose() {
-        if (this.currentBlobUrl) {
-            URL.revokeObjectURL(this.currentBlobUrl);
-        }
-    }
+	async onClose() {
+		if (this.currentBlobUrl) {
+			URL.revokeObjectURL(this.currentBlobUrl);
+		}
+	}
 
-    private updatePreview() {
-        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (!activeView) {
-            return;
-        }
+	private updatePreview() {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (!activeView) {
+			return;
+		}
 
-        const content = activeView.editor.getValue();
-        const extractor = new CodeBlockExtractor(content);
-        const extracted = extractor.extract();
+		const content = activeView.editor.getValue();
+		const extractor = new CodeBlockExtractor(content);
+		const extracted = extractor.extract();
 
-        try {
-            const combinedJs = [extracted.js, extracted.ts]
-                .filter(Boolean)
-                .join('\n');
+		try {
+			const combinedJs = [extracted.js, extracted.ts]
+				.filter(Boolean)
+				.join("\n");
 
-            const transformedJs = combinedJs ? this.transformer.transform(combinedJs) : '';
+			const transformedJs = combinedJs
+				? this.transformer.transform(combinedJs)
+				: "";
 
-            const html = this.renderer.generateDocument({
-                html: extracted.html,
-                css: extracted.css,
-                js: transformedJs,
-            });
+			const html = this.renderer.generateDocument({
+				html: extracted.html,
+				css: extracted.css,
+				js: transformedJs,
+			});
 
-            if (this.currentBlobUrl) {
-                URL.revokeObjectURL(this.currentBlobUrl);
-            }
+			if (this.currentBlobUrl) {
+				URL.revokeObjectURL(this.currentBlobUrl);
+			}
 
-            const blob = new Blob([html], { type: 'text/html' });
-            this.currentBlobUrl = URL.createObjectURL(blob);
-            this.iframe.src = this.currentBlobUrl;
-        } catch (error) {
-            console.error('Preview update failed:', error);
-            const errorHtml = this.renderer.generateDocument({
-                html: `<pre style="color: red; padding: 1rem;">${error}</pre>`,
-                css: '',
-                js: '',
-            });
-            const blob = new Blob([errorHtml], { type: 'text/html' });
-            if (this.currentBlobUrl) {
-                URL.revokeObjectURL(this.currentBlobUrl);
-            }
-            this.currentBlobUrl = URL.createObjectURL(blob);
-            this.iframe.src = this.currentBlobUrl;
-        }
-    }
+			const blob = new Blob([html], { type: "text/html" });
+			this.currentBlobUrl = URL.createObjectURL(blob);
+			this.iframe.src = this.currentBlobUrl;
+		} catch (error) {
+			console.error("Preview update failed:", error);
+			const errorHtml = this.renderer.generateDocument({
+				html: `<pre style="color: red; padding: 1rem;">${error}</pre>`,
+				css: "",
+				js: "",
+			});
+			const blob = new Blob([errorHtml], { type: "text/html" });
+			if (this.currentBlobUrl) {
+				URL.revokeObjectURL(this.currentBlobUrl);
+			}
+			this.currentBlobUrl = URL.createObjectURL(blob);
+			this.iframe.src = this.currentBlobUrl;
+		}
+	}
 }
 ```
 
@@ -717,56 +730,53 @@ Modify: `src/main.ts`
 // ABOUTME: Main entry point for the Obsidian Web Dev Playground plugin
 // ABOUTME: Registers the playground view and commands
 
-import { Plugin } from 'obsidian';
-import { PlaygroundView, VIEW_TYPE_PLAYGROUND } from './PlaygroundView';
+import { Plugin } from "obsidian";
+import { PlaygroundView, VIEW_TYPE_PLAYGROUND } from "./PlaygroundView";
 
 export default class WebDevPlaygroundPlugin extends Plugin {
-    async onload() {
-        console.log('Loading Web Dev Playground plugin');
+	async onload() {
+		console.log("Loading Web Dev Playground plugin");
 
-        this.registerView(
-            VIEW_TYPE_PLAYGROUND,
-            (leaf) => new PlaygroundView(leaf)
-        );
+		this.registerView(VIEW_TYPE_PLAYGROUND, (leaf) => new PlaygroundView(leaf));
 
-        this.addRibbonIcon('code', 'Open Web Dev Playground', () => {
-            this.activateView();
-        });
+		this.addRibbonIcon("code", "Open Web Dev Playground", () => {
+			this.activateView();
+		});
 
-        this.addCommand({
-            id: 'open-playground',
-            name: 'Open Web Dev Playground',
-            callback: () => {
-                this.activateView();
-            },
-        });
-    }
+		this.addCommand({
+			id: "open-playground",
+			name: "Open Web Dev Playground",
+			callback: () => {
+				this.activateView();
+			},
+		});
+	}
 
-    async onunload() {
-        console.log('Unloading Web Dev Playground plugin');
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_PLAYGROUND);
-    }
+	async onunload() {
+		console.log("Unloading Web Dev Playground plugin");
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_PLAYGROUND);
+	}
 
-    async activateView() {
-        const { workspace } = this.app;
+	async activateView() {
+		const { workspace } = this.app;
 
-        let leaf = workspace.getLeavesOfType(VIEW_TYPE_PLAYGROUND)[0];
+		let leaf = workspace.getLeavesOfType(VIEW_TYPE_PLAYGROUND)[0];
 
-        if (!leaf) {
-            const rightLeaf = workspace.getRightLeaf(false);
-            if (rightLeaf) {
-                leaf = rightLeaf;
-                await leaf.setViewState({
-                    type: VIEW_TYPE_PLAYGROUND,
-                    active: true,
-                });
-            }
-        }
+		if (!leaf) {
+			const rightLeaf = workspace.getRightLeaf(false);
+			if (rightLeaf) {
+				leaf = rightLeaf;
+				await leaf.setViewState({
+					type: VIEW_TYPE_PLAYGROUND,
+					active: true,
+				});
+			}
+		}
 
-        if (leaf) {
-            workspace.revealLeaf(leaf);
-        }
-    }
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
+	}
 }
 ```
 
@@ -792,6 +802,7 @@ git commit -m "feat: add playground view with live preview sidebar"
 ## Task 6: Settings Tab
 
 **Files:**
+
 - Create: `src/SettingsTab.ts`
 - Create: `src/Settings.ts`
 - Modify: `src/main.ts`
@@ -806,15 +817,15 @@ Create: `src/Settings.ts`
 // ABOUTME: Manages debounce timeout, update mode, and loop protection settings
 
 export interface PlaygroundSettings {
-    debounceTimeout: number;
-    updateOnSaveOnly: boolean;
-    loopProtectionTimeout: number;
+	debounceTimeout: number;
+	updateOnSaveOnly: boolean;
+	loopProtectionTimeout: number;
 }
 
 export const DEFAULT_SETTINGS: PlaygroundSettings = {
-    debounceTimeout: 500,
-    updateOnSaveOnly: false,
-    loopProtectionTimeout: 100,
+	debounceTimeout: 500,
+	updateOnSaveOnly: false,
+	loopProtectionTimeout: 100,
 };
 ```
 
@@ -826,63 +837,65 @@ Create: `src/SettingsTab.ts`
 // ABOUTME: Settings UI for Web Dev Playground plugin
 // ABOUTME: Provides controls for debounce timeout, update mode toggle, and loop protection
 
-import { App, PluginSettingTab, Setting } from 'obsidian';
-import WebDevPlaygroundPlugin from './main';
+import { App, PluginSettingTab, Setting } from "obsidian";
+import WebDevPlaygroundPlugin from "./main";
 
 export class PlaygroundSettingTab extends PluginSettingTab {
-    plugin: WebDevPlaygroundPlugin;
+	plugin: WebDevPlaygroundPlugin;
 
-    constructor(app: App, plugin: WebDevPlaygroundPlugin) {
-        super(app, plugin);
-        this.plugin = plugin;
-    }
+	constructor(app: App, plugin: WebDevPlaygroundPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
 
-    display(): void {
-        const { containerEl } = this;
-        containerEl.empty();
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
 
-        containerEl.createEl('h2', { text: 'Web Dev Playground Settings' });
+		containerEl.createEl("h2", { text: "Web Dev Playground Settings" });
 
-        new Setting(containerEl)
-            .setName('Debounce timeout')
-            .setDesc('Milliseconds to wait after typing before updating preview (100-2000ms)')
-            .addSlider((slider) =>
-                slider
-                    .setLimits(100, 2000, 100)
-                    .setValue(this.plugin.settings.debounceTimeout)
-                    .setDynamicTooltip()
-                    .onChange(async (value) => {
-                        this.plugin.settings.debounceTimeout = value;
-                        await this.plugin.saveSettings();
-                    })
-            );
+		new Setting(containerEl)
+			.setName("Debounce timeout")
+			.setDesc(
+				"Milliseconds to wait after typing before updating preview (100-2000ms)",
+			)
+			.addSlider((slider) =>
+				slider
+					.setLimits(100, 2000, 100)
+					.setValue(this.plugin.settings.debounceTimeout)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.debounceTimeout = value;
+						await this.plugin.saveSettings();
+					}),
+			);
 
-        new Setting(containerEl)
-            .setName('Update on save only')
-            .setDesc('Only update preview when file is saved (ignores debounce)')
-            .addToggle((toggle) =>
-                toggle
-                    .setValue(this.plugin.settings.updateOnSaveOnly)
-                    .onChange(async (value) => {
-                        this.plugin.settings.updateOnSaveOnly = value;
-                        await this.plugin.saveSettings();
-                    })
-            );
+		new Setting(containerEl)
+			.setName("Update on save only")
+			.setDesc("Only update preview when file is saved (ignores debounce)")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.updateOnSaveOnly)
+					.onChange(async (value) => {
+						this.plugin.settings.updateOnSaveOnly = value;
+						await this.plugin.saveSettings();
+					}),
+			);
 
-        new Setting(containerEl)
-            .setName('Loop protection timeout')
-            .setDesc('Milliseconds before detecting infinite loop (50-1000ms)')
-            .addSlider((slider) =>
-                slider
-                    .setLimits(50, 1000, 50)
-                    .setValue(this.plugin.settings.loopProtectionTimeout)
-                    .setDynamicTooltip()
-                    .onChange(async (value) => {
-                        this.plugin.settings.loopProtectionTimeout = value;
-                        await this.plugin.saveSettings();
-                    })
-            );
-    }
+		new Setting(containerEl)
+			.setName("Loop protection timeout")
+			.setDesc("Milliseconds before detecting infinite loop (50-1000ms)")
+			.addSlider((slider) =>
+				slider
+					.setLimits(50, 1000, 50)
+					.setValue(this.plugin.settings.loopProtectionTimeout)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.loopProtectionTimeout = value;
+						await this.plugin.saveSettings();
+					}),
+			);
+	}
 }
 ```
 
@@ -894,72 +907,72 @@ Modify: `src/main.ts`
 // ABOUTME: Main entry point for the Obsidian Web Dev Playground plugin
 // ABOUTME: Registers the playground view and commands
 
-import { Plugin } from 'obsidian';
-import { PlaygroundView, VIEW_TYPE_PLAYGROUND } from './PlaygroundView';
-import { PlaygroundSettingTab } from './SettingsTab';
-import { DEFAULT_SETTINGS, PlaygroundSettings } from './Settings';
+import { Plugin } from "obsidian";
+import { PlaygroundView, VIEW_TYPE_PLAYGROUND } from "./PlaygroundView";
+import { PlaygroundSettingTab } from "./SettingsTab";
+import { DEFAULT_SETTINGS, PlaygroundSettings } from "./Settings";
 
 export default class WebDevPlaygroundPlugin extends Plugin {
-    settings: PlaygroundSettings;
+	settings: PlaygroundSettings;
 
-    async onload() {
-        console.log('Loading Web Dev Playground plugin');
+	async onload() {
+		console.log("Loading Web Dev Playground plugin");
 
-        await this.loadSettings();
+		await this.loadSettings();
 
-        this.registerView(
-            VIEW_TYPE_PLAYGROUND,
-            (leaf) => new PlaygroundView(leaf, this.settings)
-        );
+		this.registerView(
+			VIEW_TYPE_PLAYGROUND,
+			(leaf) => new PlaygroundView(leaf, this.settings),
+		);
 
-        this.addRibbonIcon('code', 'Open Web Dev Playground', () => {
-            this.activateView();
-        });
+		this.addRibbonIcon("code", "Open Web Dev Playground", () => {
+			this.activateView();
+		});
 
-        this.addCommand({
-            id: 'open-playground',
-            name: 'Open Web Dev Playground',
-            callback: () => {
-                this.activateView();
-            },
-        });
+		this.addCommand({
+			id: "open-playground",
+			name: "Open Web Dev Playground",
+			callback: () => {
+				this.activateView();
+			},
+		});
 
-        this.addSettingTab(new PlaygroundSettingTab(this.app, this));
-    }
+		this.addSettingTab(new PlaygroundSettingTab(this.app, this));
+	}
 
-    async onunload() {
-        console.log('Unloading Web Dev Playground plugin');
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_PLAYGROUND);
-    }
+	async onunload() {
+		console.log("Unloading Web Dev Playground plugin");
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_PLAYGROUND);
+	}
 
-    async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-    }
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
 
-    async saveSettings() {
-        await this.saveData(this.settings);
-    }
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
 
-    async activateView() {
-        const { workspace } = this.app;
+	async activateView() {
+		const { workspace } = this.app;
 
-        let leaf = workspace.getLeavesOfType(VIEW_TYPE_PLAYGROUND)[0];
+		let leaf = workspace.getLeavesOfType(VIEW_TYPE_PLAYGROUND)[0];
 
-        if (!leaf) {
-            const rightLeaf = workspace.getRightLeaf(false);
-            if (rightLeaf) {
-                leaf = rightLeaf;
-                await leaf.setViewState({
-                    type: VIEW_TYPE_PLAYGROUND,
-                    active: true,
-                });
-            }
-        }
+		if (!leaf) {
+			const rightLeaf = workspace.getRightLeaf(false);
+			if (rightLeaf) {
+				leaf = rightLeaf;
+				await leaf.setViewState({
+					type: VIEW_TYPE_PLAYGROUND,
+					active: true,
+				});
+			}
+		}
 
-        if (leaf) {
-            workspace.revealLeaf(leaf);
-        }
-    }
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
+	}
 }
 ```
 
@@ -970,47 +983,50 @@ Modify: `src/PlaygroundView.ts`
 Update constructor and debounce usage:
 
 ```typescript
-import { PlaygroundSettings } from './Settings';
+import { PlaygroundSettings } from "./Settings";
 
 export class PlaygroundView extends ItemView {
-    private settings: PlaygroundSettings;
+	private settings: PlaygroundSettings;
 
-    constructor(leaf: WorkspaceLeaf, settings: PlaygroundSettings) {
-        super(leaf);
-        this.settings = settings;
-        this.transformer = new CodeTransformer(settings.loopProtectionTimeout);
-        this.renderer = new IframeRenderer();
-    }
+	constructor(leaf: WorkspaceLeaf, settings: PlaygroundSettings) {
+		super(leaf);
+		this.settings = settings;
+		this.transformer = new CodeTransformer(settings.loopProtectionTimeout);
+		this.renderer = new IframeRenderer();
+	}
 
-    async onOpen() {
-        const container = this.containerEl.children[1];
-        container.empty();
-        container.addClass('playground-view');
+	async onOpen() {
+		const container = this.containerEl.children[1];
+		container.empty();
+		container.addClass("playground-view");
 
-        this.iframe = container.createEl('iframe');
-        this.iframe.addClass('playground-iframe');
-        this.iframe.style.width = '100%';
-        this.iframe.style.height = '100%';
-        this.iframe.style.border = 'none';
+		this.iframe = container.createEl("iframe");
+		this.iframe.addClass("playground-iframe");
+		this.iframe.style.width = "100%";
+		this.iframe.style.height = "100%";
+		this.iframe.style.border = "none";
 
-        if (this.settings.updateOnSaveOnly) {
-            this.registerEvent(
-                this.app.vault.on('modify', () => {
-                    this.updatePreview();
-                })
-            );
-        } else {
-            this.registerEvent(
-                this.app.workspace.on('editor-change', debounce(() => {
-                    this.updatePreview();
-                }, this.settings.debounceTimeout))
-            );
-        }
+		if (this.settings.updateOnSaveOnly) {
+			this.registerEvent(
+				this.app.vault.on("modify", () => {
+					this.updatePreview();
+				}),
+			);
+		} else {
+			this.registerEvent(
+				this.app.workspace.on(
+					"editor-change",
+					debounce(() => {
+						this.updatePreview();
+					}, this.settings.debounceTimeout),
+				),
+			);
+		}
 
-        this.updatePreview();
-    }
+		this.updatePreview();
+	}
 
-    // ... rest of the class remains the same
+	// ... rest of the class remains the same
 }
 ```
 
@@ -1034,6 +1050,7 @@ git commit -m "feat: add settings tab for debounce, update mode, and loop protec
 ## Task 7: Documentation
 
 **Files:**
+
 - Create: `docs/SPEC.md`
 - Update: `README.md`
 
@@ -1051,33 +1068,37 @@ Minimal Obsidian plugin for sketching web development ideas directly in notes. R
 ## Core Features
 
 ### Code Block Extraction
+
 - Scans active note for code blocks with languages: `html`, `css`, `js`, `ts`, `javascript`, `typescript`
 - Concatenates multiple blocks of same type in document order
 - Example: Two `js` blocks become one combined script
 
 ### Live Preview
+
 - Renders in right sidebar panel
 - Updates on typing (debounced) or save (configurable)
 - Default template injects user code into structured HTML document
 - Uses iframe with blob URL for isolation
 
 ### Code Transformation
+
 - TypeScript → JavaScript via Babel
 - Infinite loop protection via `@freecodecamp/loop-protect`
 - Syntax errors displayed in preview
 
 ### Settings
+
 - Debounce timeout (100-2000ms, default 500ms)
-- Update mode toggle (debounced vs save-only)
 - Loop protection timeout (50-1000ms, default 100ms)
 
 ## Architecture
+```
 
-```
 Active Note → CodeBlockExtractor → CodeTransformer → IframeRenderer → Sidebar View
-                                         ↓
-                                  Babel + Loop Protect
-```
+↓
+Babel + Loop Protect
+
+````
 
 ## Default HTML Template
 
@@ -1094,7 +1115,7 @@ Active Note → CodeBlockExtractor → CodeTransformer → IframeRenderer → Si
   <script>{TRANSFORMED_JS}</script>
 </body>
 </html>
-```
+````
 
 ## Future Considerations
 
@@ -1102,7 +1123,8 @@ Active Note → CodeBlockExtractor → CodeTransformer → IframeRenderer → Si
 - Image export (screenshot of preview)
 - External library imports
 - Console output capture
-```
+
+````
 
 **Step 2: Update README.md**
 
@@ -1159,7 +1181,7 @@ pnpm test
 
 # Watch mode
 pnpm dev
-```
+````
 
 ## Installation
 
@@ -1173,16 +1195,16 @@ pnpm dev
 ## Settings
 
 - **Debounce timeout**: Delay before updating preview (100-2000ms)
-- **Update on save only**: Only update when file is saved
 - **Loop protection timeout**: Timeout for infinite loop detection (50-1000ms)
-```
+
+````
 
 **Step 3: Commit**
 
 ```bash
 git add docs/SPEC.md README.md
 git commit -m "docs: add specification and usage documentation"
-```
+````
 
 ---
 
@@ -1198,7 +1220,6 @@ After implementing all tasks:
 - [ ] Infinite loop protection works
 - [ ] Settings UI functional
 - [ ] Debounce timing configurable
-- [ ] Save-only mode works
 
 ## Next Steps (Future Features)
 

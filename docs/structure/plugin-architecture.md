@@ -57,6 +57,7 @@ Blob URL → Iframe (Preview)
 ### main.ts (Plugin Entry)
 
 **Responsibilities:**
+
 - Register PlaygroundView with Obsidian
 - Add ribbon icon and command palette command
 - Manage settings persistence (load/save)
@@ -64,6 +65,7 @@ Blob URL → Iframe (Preview)
 - Handle plugin lifecycle (onload/onunload)
 
 **Key Methods:**
+
 - `onload()` - Initialize plugin, load settings, register view and commands
 - `onunload()` - Cleanup, detach views
 - `activateView()` - Open playground in right sidebar
@@ -71,6 +73,7 @@ Blob URL → Iframe (Preview)
 - `saveSettings()` - Persist to disk
 
 **Dependencies:**
+
 - PlaygroundView
 - PlaygroundSettingTab
 - settings (interface)
@@ -78,42 +81,46 @@ Blob URL → Iframe (Preview)
 ### settings.ts (Configuration)
 
 **Responsibilities:**
+
 - Define PlaygroundSettings interface
 - Provide default values
 - Document setting constraints
 
 **Interface:**
+
 ```typescript
 interface PlaygroundSettings {
-    debounceTimeout: number;        // 100-2000ms
-    updateOnSaveOnly: boolean;      // true = save only, false = debounced
-    loopProtectionTimeout: number;  // 50-1000ms
+	debounceTimeout: number; // 100-2000ms
+	loopProtectionTimeout: number; // 50-1000ms
 }
 ```
 
 **Defaults:**
+
 - debounceTimeout: 500ms
-- updateOnSaveOnly: false
 - loopProtectionTimeout: 100ms
 
 ### settings-tab.ts (Settings UI)
 
 **Responsibilities:**
+
 - Render settings interface
 - Handle user input
 - Save changes immediately
 
 **UI Controls:**
+
 - Slider for debounce timeout (100-2000ms, step 100)
-- Toggle for update-on-save mode
 - Slider for loop protection timeout (50-1000ms, step 50)
 
 **Key Methods:**
+
 - `display()` - Build settings UI with Obsidian's Setting API
 
 ### PlaygroundView.ts (Sidebar View)
 
 **Responsibilities:**
+
 - Manage iframe lifecycle
 - Listen to editor changes
 - Orchestrate extraction → transformation → rendering pipeline
@@ -121,11 +128,13 @@ interface PlaygroundSettings {
 - Clean up blob URLs
 
 **Key Properties:**
+
 - `plugin` - Reference to main plugin (for accessing settings)
 - `iframe` - DOM element for preview
 - `currentBlobUrl` - Track current blob for cleanup
 
 **Key Methods:**
+
 - `onOpen()` - Create iframe, register event listeners
 - `onClose()` - Revoke blob URLs, cleanup
 - `updatePreview()` - Execute full pipeline and update iframe
@@ -133,35 +142,40 @@ interface PlaygroundSettings {
 - `getIcon()` - Return 'code'
 
 **Event Handling:**
-- If `updateOnSaveOnly`: Listen to `vault.on('modify')`
-- If not: Listen to `workspace.on('editor-change')` with debounce
+
+- Listen to `workspace.on('editor-change')` with debounced updates
 
 **Error Handling:**
+
 - Transformation errors displayed in red pre-formatted text in iframe
 - Errors logged to console for debugging
 
 ### CodeBlockExtractor.ts (Parser)
 
 **Responsibilities:**
+
 - Parse markdown text for fenced code blocks
 - Extract blocks by language (html, css, js, ts, javascript, typescript)
 - Concatenate multiple blocks of same type in document order
 - Handle edge cases (empty input, unsupported languages, cross-platform line endings)
 
 **Interface:**
+
 ```typescript
 interface ExtractedCode {
-    html: string;
-    css: string;
-    js: string;
-    ts: string;
+	html: string;
+	css: string;
+	js: string;
+	ts: string;
 }
 ```
 
 **Key Methods:**
+
 - `extract()` - Main extraction logic using regex
 
 **Implementation Details:**
+
 - Regex pattern: `/```(\w+)[\r\n]+([\s\S]*?)```/g`
 - Handles both `\n` and `\r\n` line endings
 - Trims whitespace from code blocks
@@ -169,6 +183,7 @@ interface ExtractedCode {
 - Unsupported languages are ignored
 
 **Test Coverage:**
+
 - Single block extraction
 - Multiple block concatenation
 - Mixed language types
@@ -180,15 +195,18 @@ interface ExtractedCode {
 ### CodeTransformer.ts (Babel Integration)
 
 **Responsibilities:**
+
 - Transform TypeScript to JavaScript
 - Inject infinite loop protection
 - Handle transformation errors
 - Singleton plugin registration
 
 **Key Methods:**
+
 - `transform(source: string): string` - Transform code with Babel
 
 **Implementation Details:**
+
 - Uses `@babel/standalone` with TypeScript preset
 - Integrates `@freecodecamp/loop-protect` as Babel plugin
 - Static flag prevents plugin re-registration
@@ -196,6 +214,7 @@ interface ExtractedCode {
 - Throws descriptive errors on syntax issues
 
 **Test Coverage:**
+
 - TypeScript to JavaScript transformation
 - Loop protection injection
 - Syntax error handling
@@ -204,44 +223,56 @@ interface ExtractedCode {
 ### IframeRenderer.ts (HTML Generator)
 
 **Responsibilities:**
+
 - Generate complete HTML documents from code blocks
 - Use default template structure
 - Handle empty content gracefully
 
 **Interface:**
+
 ```typescript
 interface RenderContent {
-    html: string;
-    css: string;
-    js: string;
+	html: string;
+	css: string;
+	js: string;
 }
 ```
 
 **Key Methods:**
+
 - `generateDocument(content: RenderContent): string`
 
 **Template Structure:**
+
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>{CSS}</style>
-</head>
-<body>
-  <main>{HTML}</main>
-  <script>{JS}</script>
-</body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<style>
+			{CSS}
+		</style>
+	</head>
+	<body>
+		<main>{HTML}</main>
+		<script>
+			{
+				JS;
+			}
+		</script>
+	</body>
 </html>
 ```
 
 **Security Note:**
+
 - Content is NOT sanitized (intentional - users execute their own code)
 - Iframe provides isolation from main Obsidian window
 - Blob URLs ensure content doesn't persist
 
 **Test Coverage:**
+
 - Complete HTML document generation
 - Template structure validation
 - Empty content handling
@@ -253,6 +284,7 @@ interface RenderContent {
 **Purpose:** Provide TypeScript definitions for `@babel/standalone`
 
 **Exports:**
+
 - `transform(code: string, options: any): any`
 - `registerPlugin(name: string, plugin: any): void`
 
@@ -261,6 +293,7 @@ interface RenderContent {
 **Purpose:** Provide TypeScript definitions for `@freecodecamp/loop-protect`
 
 **Exports:**
+
 - `default(timeout: number, callback: (line: number) => void): any`
 
 ## Build System
@@ -268,17 +301,20 @@ interface RenderContent {
 ### build.js (Rolldown Build Script)
 
 **Responsibilities:**
+
 - Bundle source files using Rolldown
 - Handle production vs development builds
 - Manage watch mode for development
 - Configure external dependencies
 
 **Build Modes:**
+
 - Production: `node build.js --production` (no sourcemap, optimized)
 - Development: `node build.js` (inline sourcemap)
 - Watch: `node build.js --watch` (auto-rebuild on changes)
 
 **Configuration:**
+
 - Input: `src/main.ts`
 - Output: `main.js` (CommonJS format)
 - External: obsidian, electron, codemirror modules, builtin-modules
@@ -287,12 +323,14 @@ interface RenderContent {
 ### vitest.config.ts (Test Configuration)
 
 **Responsibilities:**
+
 - Configure Vitest test runner
 - Set up jsdom environment for DOM testing
 - Configure test file patterns
 - Set up path aliases
 
 **Configuration:**
+
 - Environment: jsdom (for DOM APIs)
 - Include: `src/**/*.test.ts`
 - Exclude: node_modules, dist, build
@@ -306,6 +344,7 @@ interface RenderContent {
 **Jobs:**
 
 **1. build**
+
 - Checkout code
 - Setup mise (Node 24, pnpm)
 - Install dependencies
@@ -314,6 +353,7 @@ interface RenderContent {
 - Run typecheck
 
 **2. release (only on main/beta)**
+
 - Checkout code
 - Setup mise
 - Install dependencies
@@ -322,6 +362,7 @@ interface RenderContent {
 - Run semantic-release
 
 **Triggers:**
+
 - Push to main or beta branches
 - Pull requests to main or beta
 - Tags
@@ -331,6 +372,7 @@ interface RenderContent {
 **Purpose:** Sync version across package.json, manifest.json, and versions.json
 
 **Process:**
+
 1. Read version from package.json
 2. Update manifest.json version
 3. Update versions.json with new version → minAppVersion mapping
@@ -339,6 +381,7 @@ interface RenderContent {
 ### release.config.cjs (Semantic Release)
 
 **Plugins:**
+
 1. `@semantic-release/commit-analyzer` - Determine version bump
 2. `@semantic-release/release-notes-generator` - Generate changelog
 3. `@semantic-release/changelog` - Update CHANGELOG.md
@@ -348,11 +391,13 @@ interface RenderContent {
 7. `@semantic-release/github` - Create GitHub release with assets
 
 **Release Assets:**
+
 - main.js
 - manifest.json
 - versions.json
 
 **Branches:**
+
 - main - production releases
 - beta - pre-releases
 
@@ -400,6 +445,7 @@ obsidian-web-dev-playground/
 ### Reactive Settings Pattern
 
 Settings changes take effect immediately without restarting views:
+
 - Views store plugin reference, not settings copy
 - Access `plugin.settings` dynamically
 - CodeTransformer created fresh on each preview update
@@ -407,6 +453,7 @@ Settings changes take effect immediately without restarting views:
 ### Resource Cleanup Pattern
 
 Prevent memory leaks with proper blob URL management:
+
 - Store `currentBlobUrl` in view
 - Revoke old URL before creating new one
 - Revoke in `onClose()` for final cleanup
@@ -414,6 +461,7 @@ Prevent memory leaks with proper blob URL management:
 ### Error Display Pattern
 
 Show transformation errors to users without breaking UI:
+
 - Catch transformation errors in try-catch
 - Generate error HTML with IframeRenderer
 - Display in same iframe (consistent UX)
@@ -422,6 +470,7 @@ Show transformation errors to users without breaking UI:
 ### Singleton Plugin Registration
 
 Prevent re-registration warnings:
+
 - Static flag tracks if Babel plugin registered
 - Register only once on first CodeTransformer instance
 - Safe for multiple view instances
@@ -431,11 +480,13 @@ Prevent re-registration warnings:
 ### Unit Tests (14 tests)
 
 **What We Test:**
+
 - Core logic in isolation (Extractor, Transformer, Renderer)
 - Edge cases (empty input, errors, cross-platform)
 - Actual behavior, not mocks
 
 **What We Don't Test:**
+
 - Obsidian integration (requires complex mocking)
 - Settings persistence (manual testing)
 - UI interactions (manual testing)
@@ -452,16 +503,18 @@ Prevent re-registration warnings:
 ## Performance Considerations
 
 ### Bundle Size
+
 - main.js: ~4.6MB (Babel standalone contributes ~2-3MB)
 - Acceptable for desktop Obsidian plugin
 - Future optimization: Consider lighter TypeScript compiler
 
 ### Update Frequency
+
 - Debounced to prevent excessive re-renders (default 500ms)
 - Configurable range: 100-2000ms
-- Alternative: Update on save only (manual control)
 
 ### Memory Management
+
 - Blob URLs revoked immediately when no longer needed
 - CodeTransformer recreated on each update (lightweight)
 - Iframe replaced completely on each update (clean state)
@@ -469,21 +522,25 @@ Prevent re-registration warnings:
 ## Future Enhancement Points
 
 ### Custom Templates
+
 - Support user-defined HTML templates
 - Use `<slot/>` marker for content injection (like Astro)
 - Store template in settings or separate file
 
 ### Console Output Capture
+
 - Intercept console.log/error/warn in iframe
 - Display in preview pane or separate panel
 - Useful for debugging user code
 
 ### Image Export
+
 - Screenshot iframe contents
 - Save as PNG to vault
 - Useful for sharing/documenting
 
 ### External Library Support
+
 - Allow CDN imports in settings
 - Inject script tags before user code
 - Support popular libraries (React, Vue, D3, etc.)
