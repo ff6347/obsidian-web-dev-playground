@@ -2,14 +2,14 @@
 // ABOUTME: Uses default template with meta tags and injects user content into main element
 
 export interface RenderContent {
-    html: string;
-    css: string;
-    js: string;
+	html: string;
+	css: string;
+	js: string;
 }
 
 export class IframeRenderer {
-    generateDocument(content: RenderContent): string {
-        return `<!DOCTYPE html>
+	generateDocument(content: RenderContent): string {
+		return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -21,5 +21,5 @@ export class IframeRenderer {
   <script>${content.js}</script>
 </body>
 </html>`;
-    }
+	}
 }
