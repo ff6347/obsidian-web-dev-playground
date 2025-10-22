@@ -45,9 +45,6 @@ export class PlaygroundView extends ItemView {
 
 		this.iframe = container.createEl("iframe");
 		this.iframe.addClass("playground-iframe");
-		this.iframe.style.width = "100%";
-		this.iframe.style.height = "100%";
-		this.iframe.style.border = "none";
 
 		this.registerEvent(
 			this.app.workspace.on(
