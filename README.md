@@ -1,5 +1,7 @@
 # Obsidian Web Dev Playground
 
+![](docs/demo.gif)
+
 An Obsidian plugin for rendering HTML/CSS/JS/TS code blocks in a live preview sidebar.
 
 Minimal playground for sketching out web development ideas directly in your notes.
